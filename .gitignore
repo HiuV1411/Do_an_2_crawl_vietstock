@@ -1,0 +1,24 @@
+# Môi trường ảo
+venv/
+.venv/
+env/
+
+# Biến môi trường — KHÔNG commit lên Git!
+.env
+
+# Credentials Google — KHÔNG commit lên Git!
+credentials/
+
+# Dữ liệu runtime
+data/
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# VS Code
+.vscode/
