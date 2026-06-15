@@ -27,52 +27,52 @@ SHEET_CONFIG_SOURCES = "CONFIG_SOURCES"
 # ---------------------------------------------------------------------------
 INDUSTRY_GROUP = os.getenv("INDUSTRY_GROUP", "Ngân hàng - Chứng khoán - Bảo hiểm")
 GROUP_ID       = os.getenv("GROUP_ID", "G1")
-SOURCE_ID      = "VIETSTOCK"
-SOURCE_NAME    = "Vietstock"
+SOURCE_ID   = "TINNHANH"
+SOURCE_NAME = "Tin nhanh chứng khoán"
 
 # ---------------------------------------------------------------------------
 # Vietstock — URL và selector
 # ---------------------------------------------------------------------------
-BASE_URL      = "https://vietstock.vn"
-LISTING_URL   = "https://vietstock.vn/chu-de/1-2/moi-cap-nhat.htm"
+BASE_URL    = "https://www.tinnhanhchungkhoan.vn"
+ 
+# Trang listing chính — trang chủ đã chứa tin mới nhất theo thứ tự
+# Phân trang: ?page=2, ?page=3, ...
+LISTING_URL = "https://www.tinnhanhchungkhoan.vn"
 
 # Các chuyên mục cần crawl và nhãn tương ứng
 CATEGORIES = {
-    "Chứng khoán":      "https://vietstock.vn/chung-khoan.htm",
-    "Doanh nghiệp":     "https://vietstock.vn/doanh-nghiep.htm",
-    "Tài chính":        "https://vietstock.vn/tai-chinh.htm",
-    "Bất động sản":     "https://vietstock.vn/bat-dong-san.htm",
-    "Vĩ mô":            "https://vietstock.vn/kinh-te/vi-mo.htm",
-    "Hàng hóa":         "https://vietstock.vn/hang-hoa.htm",
-    "Kinh tế - Đầu tư": "https://vietstock.vn/kinh-te/kinh-te-dau-tu.htm",
-    "Thế giới":         "https://vietstock.vn/the-gioi.htm",
+    "Chứng khoán":            "https://www.tinnhanhchungkhoan.vn/chung-khoan/",
+    "Nhận định":              "https://www.tinnhanhchungkhoan.vn/nhan-dinh/",
+    "Vĩ mô":                  "https://www.tinnhanhchungkhoan.vn/vi-mo/",
+    "Thông tin doanh nghiệp": "https://www.tinnhanhchungkhoan.vn/thong-tin-doanh-nghiep/",
+    "Tài chính - Ngân hàng":  "https://www.tinnhanhchungkhoan.vn/tai-chinh-ngan-hang/",
+    "Địa ốc":                 "https://www.tinnhanhchungkhoan.vn/dia-oc/",
+    "Quốc tế":                "https://www.tinnhanhchungkhoan.vn/quoc-te/",
+    "Trái phiếu":             "https://www.tinnhanhchungkhoan.vn/trai-phieu/",
 }
 
 # CSS Selectors cho trang listing
 LISTING_SELECTORS = {
-    # Container mỗi bài trong danh sách
-    "article_item":    "div.news-item, article.news-item, div.item-news",
-    # Tiêu đề + link
-    "title_link":      "h2 a, h3 a, .title a, .news-title a",
-    # Tóm tắt ngắn
-    "summary":         "p.sapo, p.summary, .brief, .intro",
-    # Ngày đăng
-    "published_date":  "span.time, time, .date, .post-time",
-    # Ảnh thumbnail
-    "thumbnail":       "img.lazy, img[data-src], .thumb img",
+    # Mỗi bài báo trong listing là 1 thẻ h2 có chứa link
+    "article_item":   "h2, h3",
+    # Link + tiêu đề bên trong
+    "title_link":     "a[href*='-post']",
+    # Ngày thường nằm trong text node cạnh link
+    "published_date": "span.time, span.date, time",
+    # Thumbnail (nếu có)
+    "thumbnail":      "img[src*='tinnhanhchungkhoan'], img[src*='image.tinnhanhchungkhoan']",
 }
 
 # CSS Selectors cho trang bài viết chi tiết
 DETAIL_SELECTORS = {
-    "title":          "h1.article-title, h1.title, h1",
-    "summary":        "p.sapo, p.summary, .article-sapo, h2.sapo",
-    "content":        "div.article-content, div.content-detail, div#article-body",
-    "published_date": "span.time, span.date, time[datetime], .article-time",
-    "author":         "span.author, .author-name, .by-author",
-    "category":       "div.breadcrumb a:last-child, .category-name",
-    "tags":           "div.tags a, .article-tags a, .tag-list a",
-    # Các mã cổ phiếu thường xuất hiện dạng link đến finance.vietstock.vn
-    "tickers":        "a[href*='finance.vietstock.vn/'][href*='.htm']",
+    "title":          "h1",
+    "summary":        "meta[name='description']",          # dùng attr content
+    "content":        "div.detail-content, div.content-detail, article div.text",
+    "published_date": "meta[property='article:published_time']",  # ISO datetime chính xác nhất
+    "author":         "a[href*='author-search']",
+    "category":       "meta[property='article:section']",  # "Nhận định,Chứng khoán"
+    "tags":           "meta[name='article:tag']",           # "SHS,VN-Index,Dòng tiền,..."
+    "article_id":     "meta[name='dable:item_id']",         # "391857"
 }
 
 # ---------------------------------------------------------------------------
@@ -110,10 +110,19 @@ REQUEST_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
+        "Chrome/125.0.0.0 Safari/537.36"
     ),
-    "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept":                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language":         "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding":         "gzip, deflate, br",
+    "Connection":              "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest":          "document",
+    "Sec-Fetch-Mode":          "navigate",
+    "Sec-Fetch-Site":          "none",
+    "Sec-Fetch-User":          "?1",
+    "Cache-Control":           "max-age=0",
+    "Referer":                 "https://www.tinnhanhchungkhoan.vn/",
 }
 
 # ---------------------------------------------------------------------------

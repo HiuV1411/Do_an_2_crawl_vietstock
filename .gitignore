@@ -1,25 +1,92 @@
-# Môi trường ảo
-doan2-env/
-venv/
-.venv/
-env/
-
-# Biến môi trường — KHÔNG commit lên Git!
-.env
-
-# Credentials Google — KHÔNG commit lên Git!
-credentials/
-
-# Dữ liệu runtime
-data/
-logs/
-
-# Python cache
+# =========================
+# Python
+# =========================
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
+*.so
 
-# VS Code
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# IDE
+# =========================
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Credentials / Secrets
+# =========================
+credentials/
+service_account.json
+*.pem
+*.key
+*.crt
+
+# =========================
+# Data Files
+# =========================
+data/
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.db
+*.sqlite
+*.sqlite3
+
+# Nếu muốn giữ thư mục data nhưng không commit dữ liệu:
+# data/*
+# !data/.gitkeep
+
+# =========================
+# Testing
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# =========================
+# Build
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp

@@ -23,7 +23,7 @@ import sys
 import traceback
 
 from src.crawler.utils import setup_logging, now_str, crawl_session_label
-from src.crawler.vietstock import crawl_new_articles
+from src.crawler.tinnhanh import crawl_new_articles   # ← ĐÃ ĐỔI import
 from src.storage.sheets import (
     get_client,
     get_spreadsheet,
