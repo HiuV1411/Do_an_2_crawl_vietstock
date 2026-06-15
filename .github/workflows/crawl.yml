@@ -1,81 +1,55 @@
-name: CafeF News Crawler
+name: Vietstock Daily Crawler
 
 on:
+  # ----------------------------------------------------------------
+  # Chạy tự động 2 lần/ngày theo giờ Việt Nam (UTC+7)
+  #   08:30 ICT = 01:30 UTC
+  #   18:30 ICT = 11:30 UTC
+  # ----------------------------------------------------------------
   schedule:
-    # 08:30 ICT = 01:30 UTC
-    - cron: '30 1 * * *'
-    # 18:30 ICT = 11:30 UTC
-    - cron: '30 11 * * *'
+    - cron: "30 1 * * *"   # 08:30 sáng ICT (không ghi thời gian vào sheet)
+    - cron: "30 11 * * *"  # 18:30 chiều ICT
 
-  # Cho phép chạy thủ công từ tab Actions trên GitHub (để test)
+  # Cho phép chạy thủ công từ tab Actions (rất hữu ích khi demo)
   workflow_dispatch:
-    inputs:
-      session:
-        description: 'Phiên crawl (MORNING / EVENING / MANUAL)'
-        required: false
-        default: 'MANUAL'
 
 jobs:
   crawl:
+    name: Crawl Vietstock News
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20       # Tối đa 20 phút, tránh job treo vô hạn
 
     steps:
-      - name: Checkout code
+      # 1. Checkout source code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.11
+      # 2. Setup Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"          # Cache dependencies → lần sau nhanh hơn
 
+      # 3. Cài thư viện
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Tạo thư mục runtime
-        run: mkdir -p data logs
-
-      - name: Restore dedup database từ cache
-        uses: actions/cache@v4
-        with:
-          path: data/seen_urls.db
-          key: seen-urls-db-${{ github.run_id }}
-          restore-keys: |
-            seen-urls-db-
-
-      - name: Xác định phiên crawl
-        id: session
-        run: |
-          # Nếu chạy thủ công thì dùng input, ngược lại tự xác định theo giờ UTC
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "name=${{ github.event.inputs.session }}" >> $GITHUB_OUTPUT
-          else
-            HOUR=$(date -u +%H)
-            MINUTE=$(date -u +%M)
-            if [ "$HOUR" = "01" ]; then
-              echo "name=MORNING" >> $GITHUB_OUTPUT
-            else
-              echo "name=EVENING" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-      - name: Chạy crawler
+      # 4. Chạy pipeline chính
+      #    Credentials được inject từ GitHub Secrets (không bao giờ xuất hiện trong log)
+      - name: Run crawler pipeline
         env:
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GSPREAD_CREDS: ${{ secrets.GSPREAD_CREDS }}
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          SOURCE_ID: CAFEF
           INDUSTRY_GROUP: ${{ secrets.INDUSTRY_GROUP }}
-          MAX_PAGES: 5
-          REQUEST_DELAY: 2
-          REQUEST_TIMEOUT: 30
-          MAX_RETRIES: 3
-        run: python main.py --session ${{ steps.session.outputs.name }}
+          GROUP_ID: ${{ secrets.GROUP_ID }}
+        run: python -m src.pipeline.runner
 
-      - name: Upload logs
-        if: always()
+      # 5. Upload log file nếu có (để debug khi cần)
+      - name: Upload logs (on failure)
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: crawler-logs-${{ github.run_id }}
+          name: crawl-logs-${{ github.run_id }}
           path: logs/
           retention-days: 7
