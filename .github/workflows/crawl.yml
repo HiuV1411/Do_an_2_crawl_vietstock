@@ -3,11 +3,11 @@ name: Vietstock Daily Crawler
 on:
   # ----------------------------------------------------------------
   # Chạy tự động 2 lần/ngày theo giờ Việt Nam (UTC+7)
-  #   09:30 ICT = 02:30 UTC
+  #   10:00 ICT = 03:00 UTC
   #   20:30 ICT = 13:30 UTC
   # ----------------------------------------------------------------
   schedule:
-    - cron: "30 2 * * *"
+    - cron: "0 3 * * *"
     - cron: "30 13 * * *"
 
   # Cho phép chạy thủ công từ tab Actions (rất hữu ích khi demo)
